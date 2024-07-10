@@ -1,0 +1,5 @@
+{
+    "java.compile.nullAnalysis.mode": "automatic",
+    "java.configuration.updateBuildConfiguration": "interactive",
+    "cmake.sourceDirectory": "/home/marcos/Área de Trabalho/Arq/Modulo_5/Dispositivos_Moveis/app_maps/linux"
+}
