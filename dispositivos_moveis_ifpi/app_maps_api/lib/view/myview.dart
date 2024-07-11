@@ -1,9 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-// import 'dart:typed_data';
-import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 // import 'package:geolocator/geolocator.dart';
 
@@ -20,8 +17,6 @@ class MapSampleState extends State<MapSample> {
 
   //texto contendo a localização atual
   String _localizacao = 'Casa';
-
-  BitmapDescriptor? _marker;
 
   Future<void> _changeLocation() async {
     final GoogleMapController controller = await _controller.future;
@@ -42,69 +37,20 @@ class MapSampleState extends State<MapSample> {
     zoom: 18,
   );
 
-  Future<void> _getPermission() async {
-    await Geolocator.requestPermission();
-  }
-
-  Future<BitmapDescriptor> getMarker() async {
-    return await BitmapDescriptor.fromAssetImage(
-        const ImageConfiguration(devicePixelRatio: 2.5, size: Size(50, 50)),
-        'assets/Logo-IFPI-Vertical.png');
-  }
-
-  @override
-  @override
-  void initState() {
-    super.initState();
-    initializeMap();
-  }
-
-  void loadMakerIcon() async {
-    setState(() {
-      _marker = null;
-    });
-    _marker = await getMarker();
-    setState(() {});
-  }
-
-  void initializeMap() async {
-    await _getPermission();
-    loadMakerIcon();
-  }
-
   Set<Marker> _getMarkers() {
     return {
       Marker(
           markerId: const MarkerId('1'),
           position: const LatLng(-5.093708656214135, -42.75412754927936),
           infoWindow: const InfoWindow(title: 'Casa'),
-          icon: _marker != null // se o marcador ainda não foi carregado
-              ? _marker! // então carregue o marcador
-              : BitmapDescriptor.defaultMarker // se o marcador ja foi carregado
-          ),
+          icon: BitmapDescriptor.defaultMarkerWithHue(
+              BitmapDescriptor.hueYellow)),
       const Marker(
         markerId: MarkerId('2'),
         position: LatLng(-5.088408, -42.81065),
         infoWindow: InfoWindow(title: 'IFPI'),
       ),
     };
-  }
-
-  // Future<BitmapDescriptor> getMarker() async {
-  //   return await BitmapDescriptor.fromAssetImage(
-  //       const ImageConfiguration(devicePixelRatio: 2.5, size: Size(50, 50)),
-  //       'assets/Logo-IFPI-Vertical.png');
-  // }
-
-  Future<BitmapDescriptor> fromAssetSync(String assetName) async {
-    final ByteData data = await rootBundle.load(assetName);
-    final Uint8List bytes =
-        data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
-    return BitmapDescriptor.fromBytes(bytes);
-  }
-
-  Future<BitmapDescriptor> getMarkerSync() {
-    return fromAssetSync('assets/Logo-IFPI-Vertical.png');
   }
 
   @override
