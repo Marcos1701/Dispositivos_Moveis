@@ -1,10 +1,9 @@
 import 'dart:async';
-import 'dart:typed_data';
+// import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
-// import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 // import 'package:geolocator/geolocator.dart';
 
@@ -43,16 +42,24 @@ class MapSampleState extends State<MapSample> {
 
   Uint8List? marketimages;
   List<String> images = [
+    'assets/home.png',
     'assets/Logo-IFPI-Vertical.png',
+  ];
+
+  final List<int> _sizes = <int>[100, 250];
+
+  final List<String> _titles = <String>[
+    'Casa Daniel',
+    'IFPI',
   ];
 
   // created empty list of markers
   final List<Marker> _markers = <Marker>[
-    Marker(
-        markerId: const MarkerId('1'),
-        position: const LatLng(-5.093708656214135, -42.75412754927936),
-        infoWindow: const InfoWindow(title: 'Casa'),
-        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueYellow))
+    // Marker(
+    //     markerId: const MarkerId('0'),
+    //     position: const LatLng(-5.093708656214135, -42.75412754927936),
+    //     infoWindow: const InfoWindow(title: 'Casa'),
+    //     icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueYellow))
   ];
 
   // declared method to get Images
@@ -67,12 +74,15 @@ class MapSampleState extends State<MapSample> {
   }
 
   final List<LatLng> _latLen = <LatLng>[
+    const LatLng(-5.093708656214135, -42.75412754927936),
     const LatLng(-5.088408, -42.81065),
   ];
 
-  void getPermission() async {
-    await Geolocator.requestPermission();
-    return;
+  void requestPermission() async {
+    var status = await Geolocator.checkPermission();
+    if (status == LocationPermission.denied) {
+      status = await Geolocator.requestPermission();
+    }
   }
 
   @override
@@ -80,13 +90,13 @@ class MapSampleState extends State<MapSample> {
     super.initState();
     // initialize loadData method
     loadData();
-    getPermission();
+    requestPermission();
   }
 
   // created method for displaying custom markers according to index
   loadData() async {
     for (int i = 0; i < images.length; i++) {
-      final Uint8List markIcons = await getImages(images[i], 100);
+      final Uint8List markIcons = await getImages(images[i], _sizes[i]);
       // makers added according to index
       _markers.add(Marker(
         // given marker id
@@ -95,9 +105,9 @@ class MapSampleState extends State<MapSample> {
         icon: BitmapDescriptor.fromBytes(markIcons),
         // given position
         position: _latLen[i],
-        infoWindow: const InfoWindow(
+        infoWindow: InfoWindow(
           // given title for marker
-          title: 'IFPI',
+          title: _titles[i],
         ),
       ));
       setState(() {});
@@ -114,12 +124,44 @@ class MapSampleState extends State<MapSample> {
         myLocationButtonEnabled: true,
         mapType: MapType.hybrid,
         markers: Set<Marker>.of(_markers),
+        onLongPress: _onMapLongPressed,
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _changeLocation,
         label: const Text('Change Location'),
         icon: const Icon(Icons.change_circle),
       ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      // created method for displaying custom markers according to index
     );
+  }
+
+  // para adicionar um evento para que se adicione um marcador ao clicar
+  // no mapa
+
+  // created method for displaying custom markers according to index
+  void _onMapLongPressed(LatLng latLng) {
+    // evento disparado quando o mapa é pressionado e segurado por alguns segundos
+    Future.delayed(const Duration(seconds: 1), () {
+      // adiciona um novo marcador no click
+      setState(() {
+        _markers.add(Marker(
+          markerId: MarkerId(_markers.length.toString()),
+          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+          position: latLng,
+          infoWindow: const InfoWindow(
+            title: "Novo Marcador",
+          ),
+        ));
+
+        _controller.future.then((GoogleMapController controller) {
+          controller
+              .animateCamera(CameraUpdate.newCameraPosition(CameraPosition(
+            target: latLng,
+            zoom: 18,
+          )));
+        });
+      });
+    });
   }
 }
