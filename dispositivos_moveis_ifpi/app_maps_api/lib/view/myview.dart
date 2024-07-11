@@ -37,29 +37,26 @@ class MapSampleState extends State<MapSample> with TickerProviderStateMixin {
     zoom: 18,
   );
 
+  // lista de imagens
   Uint8List? marketimages;
   List<String> images = [
     'assets/home.png',
     'assets/Logo-IFPI-Vertical.png',
   ];
 
+  // lista contendo o tamanho das imagens
   final List<int> _sizes = <int>[100, 250];
 
+  // lista contendo os titulos de cada marker
   final List<String> _titles = <String>[
     'Casa Daniel',
     'IFPI',
   ];
 
-  // created empty list of markers
-  final List<Marker> _markers = <Marker>[
-    // Marker(
-    //     markerId: const MarkerId('0'),
-    //     position: const LatLng(-5.093708656214135, -42.75412754927936),
-    //     infoWindow: const InfoWindow(title: 'Casa'),
-    //     icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueYellow))
-  ];
+  // lista contendo os marcadores
+  final List<Marker> _markers = <Marker>[];
 
-  // declared method to get Images
+  // metodo para carregar as imagens
   Future<Uint8List> getImages(String path, int width) async {
     ByteData data = await rootBundle.load(path);
     ui.Codec codec = await ui.instantiateImageCodec(data.buffer.asUint8List(),
@@ -68,13 +65,26 @@ class MapSampleState extends State<MapSample> with TickerProviderStateMixin {
     return (await fi.image.toByteData(format: ui.ImageByteFormat.png))!
         .buffer
         .asUint8List();
+
+    /* 
+    Resumindo o processo acima:
+
+    1. Recebe o caminho da imagem e o tamanho desejado
+    2. Cria um ByteData a partir do caminho da imagem
+    3. Cria um codec para decodificar a imagem
+    4. Cria um FrameInfo para obter a imagem decodificada
+    5. Cria um Uint8List a partir da imagem decodificada
+    6. Retorna o Uint8List
+    */
   }
 
+  // lista contendo as latitudes e longitudes
   final List<LatLng> _latLen = <LatLng>[
     const LatLng(-5.093708656214135, -42.75412754927936),
     const LatLng(-5.088408, -42.81065),
   ];
 
+  // metodo para pedir permissão de localização, é utilizado apenas para exibir a localização no mapa
   void requestPermission() async {
     var status = await Geolocator.checkPermission();
     if (status == LocationPermission.denied) {
@@ -107,20 +117,19 @@ class MapSampleState extends State<MapSample> with TickerProviderStateMixin {
     requestPermission();
   }
 
-  // created method for displaying custom markers according to index
+  // Metodo responsável por carregar os marcadores
   loadData() async {
     for (int i = 0; i < images.length; i++) {
       final Uint8List markIcons = await getImages(images[i], _sizes[i]);
       // makers added according to index
       _markers.add(Marker(
-        // given marker id
         markerId: MarkerId(i.toString()),
-        // given marker icon
+        // obtem a imagem
         icon: BitmapDescriptor.fromBytes(markIcons),
-        // given position
+        // Obtem a latitude e longitude
         position: _latLen[i],
         infoWindow: InfoWindow(
-          // given title for marker
+          // obtem o titulo do marcador
           title: _titles[i],
         ),
       ));
@@ -146,14 +155,13 @@ class MapSampleState extends State<MapSample> with TickerProviderStateMixin {
         icon: const Icon(Icons.change_circle),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      // created method for displaying custom markers according to index
     );
   }
 
   // para adicionar um evento para que se adicione um marcador ao clicar
   // no mapa
 
-  // created method for displaying custom markers according to index
+  // Metodo para adicionar o marcador no click
   void _onMapLongPressed(LatLng latLng) {
     // evento disparado quando o mapa é pressionado e segurado por alguns segundos
     Future.delayed(const Duration(seconds: 1), () {
