@@ -1,11 +1,8 @@
 import 'dart:async';
-// import 'dart:typed_data';
-import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-// import 'package:geolocator/geolocator.dart';
 
 class MapSample extends StatefulWidget {
   const MapSample({super.key});
@@ -14,7 +11,7 @@ class MapSample extends StatefulWidget {
   State<MapSample> createState() => MapSampleState();
 }
 
-class MapSampleState extends State<MapSample> {
+class MapSampleState extends State<MapSample> with TickerProviderStateMixin {
   final Completer<GoogleMapController> _controller =
       Completer<GoogleMapController>();
 
@@ -83,13 +80,30 @@ class MapSampleState extends State<MapSample> {
     if (status == LocationPermission.denied) {
       status = await Geolocator.requestPermission();
     }
+
+    var permission = await Geolocator.isLocationServiceEnabled();
+
+    if (permission) {
+      // verifica se a permissão foi aceita
+      Position locAtual = await Geolocator.getCurrentPosition();
+
+      setState(() {
+        _controller.future.then((GoogleMapController controller) {
+          controller.animateCamera(CameraUpdate.newCameraPosition(
+            CameraPosition(
+              target: LatLng(locAtual.latitude, locAtual.longitude),
+              zoom: 18,
+            ),
+          ));
+        });
+      });
+    }
+    return;
   }
 
   @override
   void initState() {
     super.initState();
-    // initialize loadData method
-    loadData();
     requestPermission();
   }
 
